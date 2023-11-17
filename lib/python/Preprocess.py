@@ -120,16 +120,18 @@ def rtfileToDataList(rtfile,  isSignal, maxSize=-1):
     for evt in rtfile.Events:
         muons = getMuons(evt)
         electrons = getElectrons(evt)
-        jets, bjets = getJets(evt)
+        taus = getTaus(evt)
+        fatjets = getFatJets(evt)
+        jets = getJets(evt)
         METv = Particle(evt.METvPt, 0., evt.METvPhi, 0.)
         
         # convert event to a graph
         nodeList = []
-        objects = muons+electrons+jets; objects.append(METv)
+        objects = muons+electrons+jets+taus+fatjets; objects.append(METv)
         for obj in objects:
             nodeList.append([obj.E(), obj.Px(), obj.Py(), obj.Pz(),
                              obj.Charge(), obj.BtagScore(),
-                             obj.IsMuon(), obj.IsElectron(), obj.IsJet()])
+                             obj.IsMuon(), obj.IsElectron(), obj.IsTau(), obj.IsFatJet(), obj.IsJet()])
         # NOTE: Each event converted to a directed graph
         # for each node, find 4 nearest particles and connect
         data = evtToGraph(nodeList, y=int(isSignal))
@@ -139,6 +141,36 @@ def rtfileToDataList(rtfile,  isSignal, maxSize=-1):
     print(f"@@@@ no. of dataList ends with {len(dataList)}")
     
     return dataList
+
+def rtfileToDataListTau(rtfile, isSignal, maxSize=-1):
+    dataList = []
+    for evt in rtfile.Events:
+        muons = getMuons(evt)
+        electrons = getElectrons(evt)
+        taus = getTaus(evt)
+        fatjets = getFatJets(evt)
+        jets = getJets(evt)
+        METv = Particle(evt.METvPt, 0., evt.METvPhi, 0.)
+        
+        nodeList = []
+        objects = muons + electrons + taus + fatjets + jets
+        objects.append(METv)
+
+        for obj in objects :
+            nodeList.append([obj.E(), obj.Px(), obj.Py(), obj.Pz(),
+                             obj.Charge(), obj.BtagScore(), 
+                             obj.DecayMode(), obj.GenPartFlav(), obj.LSF3(), obj.Tau3(),
+                             obj.IsMuon(), obj.IsElectron(), obj.IsTau(), obj.IsFatJet(), obj.IsJet()])
+        
+        data = evtToGraph(nodeList, y=int(isSignal))
+        dataList.append(data)
+
+        if len(dataList) == maxSize : break
+    
+    print(f"@@@@ no. of dataList ends with {len(dataList)}")
+    
+    return dataList
+
 
 def rtfileToDataListV2(rtfile, isSignal, maxSize=-1): 
     dataList = []

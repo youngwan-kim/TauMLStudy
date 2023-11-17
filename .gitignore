@@ -1,0 +1,6 @@
+ChargedHiggsAnalysis
+data
+*.o
+*.d
+*.so
+*.pcm
